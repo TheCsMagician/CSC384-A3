@@ -121,7 +121,20 @@ class QueensTableConstraint(TableConstraint):
     #the existing function signatures.
     def __init__(self, name, qi, qj, i, j):
         self._name = "Queen_" + name
-        util.raiseNotDefined()
+        scope = [qi, qj]
+        
+        satisfyingAssignments = []
+        
+        
+        for vali in qi.domain():
+            
+            for valj in qj.domain():        
+                
+                #they should not be on the same diagonal and the same column
+                if (abs(vali - valj) != abs(i - j)) and vali != valj:
+                    satisfyingAssignments.append([vali, valj])
+        
+        TableConstraint.__init__(self,name, scope, satisfyingAssignments)
 
 class NeqConstraint(Constraint):
     '''Neq constraint between two variables'''
