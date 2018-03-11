@@ -121,6 +121,7 @@ class QueensTableConstraint(TableConstraint):
     #the existing function signatures.
     def __init__(self, name, qi, qj, i, j):
         self._name = "Queen_" + name
+<<<<<<< HEAD
         scope = [qi, qj]
         
         satisfyingAssignments = []
@@ -135,6 +136,11 @@ class QueensTableConstraint(TableConstraint):
                     satisfyingAssignments.append([vali, valj])
         
         TableConstraint.__init__(self,name, scope, satisfyingAssignments)
+=======
+        
+        
+        util.raiseNotDefined()
+>>>>>>> zain
 
 class NeqConstraint(Constraint):
     '''Neq constraint between two variables'''
