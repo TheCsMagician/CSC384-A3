@@ -130,6 +130,7 @@ def sudokuCSP(initial_sudoku_board, model='neq'):
         if model == 'neq':
             constraint_list.extend(post_all_pairs(row))
         elif model == 'alldiff':
+            #AllDiffConstraint(Constraint)
             util.raiseNotDefined()
 
     for colj in range(len(var_array[0])):
