@@ -137,6 +137,7 @@ class QueensTableConstraint(TableConstraint):
         TableConstraint.__init__(self,name, scope, satisfyingAssignments)
         
 
+
 class NeqConstraint(Constraint):
     '''Neq constraint between two variables'''
     def __init__(self, name, scope):
