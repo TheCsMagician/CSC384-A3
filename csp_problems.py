@@ -108,6 +108,7 @@ def sudokuCSP(initial_sudoku_board, model='neq'):
     #first define the variables
     i = 0
     var_array = []
+
     for row_list in initial_sudoku_board:
         var_array.append([])
         j = 0
@@ -125,7 +126,7 @@ def sudokuCSP(initial_sudoku_board, model='neq'):
     #Set up the constraints
     #row constraints
     constraint_list = []
-
+    
     for row in var_array:
         if model == 'neq':
             constraint_list.extend(post_all_pairs(row))
