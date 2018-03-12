@@ -280,13 +280,14 @@ class NValuesConstraint(Constraint):
 
     def check(self):
         
-        if self.numUnassigned() > 0:
-            return True
+        assignments = []
+        for v in self.scope():
+            if v.isAssigned():
+                assignments.append(v.getValue())
+            else:
+                return True
         
-        vars = self.scope()
-        vals = map(lambda var: var.getValue(), vars)
-        
-        return self._lb <= vals.count(self._required) <= self._ub
+        return self._lb <= assignments.count(self._required) <= self._ub
 
     def hasSupport(self, var, val):
         '''check if var=val has an extension to an assignment of the
@@ -306,22 +307,28 @@ class NValuesConstraint(Constraint):
             '''tests a list of assignments which are pairs (var,val)
                to see if they can satisfy the all diff'''
             
-            vals = [val for (var, val) in assignment]
+            vals = map(lambda (var, val): val, assignment)
             
+            #return true if we can satisfy the constraint
             return self._lb <= vals.count(self._required) <= self._ub
         
-        def partialVarsInRange(assignment, remainingVars):
+        def partialValsInRange(assignment, remainingVars):
+            '''tests a list of assignments which are pairs (var,val)
+               + also considering the potential assignemsnt
+               to see if they can satisfy the all diff'''
+               
+            vals = map(lambda (var, val): val, assignment)
             
-            vals = [val for (var, val) in assignment]
-            
+            #return false if we exceed the ub
             if vals.count(self._required) > self._ub: 
-                return False
+                return False 
             
+            #return true if it is possible that we exceed lb
             return self._lb <= len(remainingVars) + vals.count(self._required)
         
         varsToAssign = self.scope()
         varsToAssign.remove(var)
-        x = Nfindvals(varsToAssign, [(var, val)], valsInRange, partialVarsInRange)
+        x = Nfindvals(varsToAssign, [(var, val)], valsInRange, partialValsInRange)
         return x
 
 
