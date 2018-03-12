@@ -279,7 +279,14 @@ class NValuesConstraint(Constraint):
         self._ub = upper_bound
 
     def check(self):
-        util.raiseNotDefined()
+        
+        if self.numUnassigned() > 0:
+            return True
+        
+        vars = self.scope()
+        vals = map(lambda var: var.getValue(), vars)
+        
+        return self._lb <= vals.count(self._required) <= self._ub
 
     def hasSupport(self, var, val):
         '''check if var=val has an extension to an assignment of the
@@ -289,4 +296,73 @@ class NValuesConstraint(Constraint):
                  a similar approach is applicable here (but of course
                  there are other ways as well)
         '''
-        util.raiseNotDefined()
+        
+        '''check if var=val has an extension to an assignment of the
+           other variable in the constraint that satisfies the constraint'''
+        if var not in self.scope():
+            return True   #var=val has support on any constraint it does not participate in
+
+        def valsInRange(assignment):
+            '''tests a list of assignments which are pairs (var,val)
+               to see if they can satisfy the all diff'''
+            
+            vals = [val for (var, val) in assignment]
+            
+            return self._lb <= vals.count(self._required) <= self._ub
+        
+        def partialVarsInRange(assignment, remainingVars):
+            
+            vals = [val for (var, val) in assignment]
+            
+            if vals.count(self._required) > self._ub: 
+                return False
+            
+            return self._lb <= len(remainingVars) + vals.count(self._required)
+        
+        varsToAssign = self.scope()
+        varsToAssign.remove(var)
+        x = Nfindvals(varsToAssign, [(var, val)], valsInRange, partialVarsInRange)
+        return x
+
+
+def Nfindvals(remainingVars, assignment, finalTestfn, partialTestfn=lambda x: True):
+    '''Helper function for finding an assignment to the variables of a constraint
+       that together with var=val satisfy the constraint. That is, this
+       function looks for a supporing tuple.
+
+       findvals uses recursion to build up a complete assignment, one value
+       from every variable's current domain, along with var=val.
+
+       It tries all ways of constructing such an assignment (using
+       a recursive depth-first search).
+
+       If partialTestfn is supplied, it will use this function to test
+       all partial assignments---if the function returns False
+       it will terminate trying to grow that assignment.
+
+       It will test all full assignments to "allVars" using finalTestfn
+       returning once it finds a full assignment that passes this test.
+
+       returns True if it finds a suitable full assignment, False if none
+       exist. (yes we are using an algorithm that is exactly like backtracking!)'''
+
+    # print "==>findvars([",
+    # for v in remainingVars: print v.name(), " ",
+    # print "], [",
+    # for x,y in assignment: print "({}={}) ".format(x.name(),y),
+    # print ""
+
+    if len(remainingVars) == 0:
+        return finalTestfn(assignment)
+    var = None
+    var = min(remainingVars, key=lambda v: v.curDomainSize())
+    remainingVars.remove(var)
+    for val in var.curDomain():
+        assignment.append((var, val))
+        if partialTestfn(assignment, remainingVars):
+            if Nfindvals(remainingVars, assignment, finalTestfn, partialTestfn):
+                return True
+        assignment.pop()   #(var,val) didn't work since we didn't do the return
+    remainingVars.append(var)
+    
+    return False
