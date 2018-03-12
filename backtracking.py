@@ -176,15 +176,16 @@ def FC(unAssignedVars, csp, allSolutions, trace):
     #Implementing handling of the trace parameter is optional
     #but it can be useful for debugging
     if unAssignedVars.empty():
-	soln = []
-	for var in csp.variables():
-    	    soln.append((var, var.getValue()))
-	   
+        soln = []
+        for var in csp.variables():
+            soln.append((var, var.getValue()))
+            
         return [soln] 
+    
     bt_search.nodesExplored += 1
     solns = []         #so far we have no solutions recursive calls
     var = unAssignedVars.extract()
-    
+
     for val in var.curDomain():
         var.setValue(val)
         noDwo = True
@@ -193,21 +194,21 @@ def FC(unAssignedVars, csp, allSolutions, trace):
                 if FCCheck(cnstr,var,val) == "DWO":
                     noDwo = False
                     break
+                
         if noDwo:
             new_solns = FC(unAssignedVars, csp, allSolutions, trace)
-	    Variable.restoreValues(var,val)
+            Variable.restoreValues(var,val)
             if new_solns:
                 solns.extend(new_solns)
             if len(solns) > 0 and not allSolutions:
                 break #don't bother with other values of nxtvar
                       #as we found a soln.
         Variable.restoreValues(var,val)
-           
+
     var.unAssign()
     unAssignedVars.insert(var)
     return solns
 
-    #util.raiseNotDefined()
 
 def GacEnforce(constraints, csp, reasonVar, reasonVal):
     '''Establish GAC on constraints by pruning values
@@ -220,17 +221,17 @@ def GacEnforce(constraints, csp, reasonVar, reasonVal):
     #util.raiseNotDefined()
     
     while len(constraints) != 0:
-	c = constraints.pop()
-	for var in c.scope():
-	    for val in var.curDomain():
-		if not c.hasSupport(var,val):
-		    var.pruneValue(val, reasonVar, reasonVal)
-		    if var.curDomainSize() == 0:
-			return "DWO"
-		    for recheck in csp.constraintsOf(var):
-			if recheck != c and not recheck in constraints: 
-			    constraints.append(recheck)
-	
+        c = constraints.pop()
+        for var in c.scope():
+            for val in var.curDomain():
+                if not c.hasSupport(var,val):
+                    var.pruneValue(val, reasonVar, reasonVal)
+                    if var.curDomainSize() == 0:
+                        return "DWO"
+                    for recheck in csp.constraintsOf(var):
+                        if recheck != c and not recheck in constraints: 
+                            constraints.append(recheck)
+                            
     return "OK"
 		    
 	
@@ -267,13 +268,13 @@ def GAC(unAssignedVars, csp, allSolutions, trace):
     var = unAssignedVars.extract()
 	
     for val in var.curDomain():
-	var.setValue(val)
-	noDwo = True
-	if GacEnforce(csp.constraintsOf(var),csp,var,val) == "DWO":
-	    noDwo = False
-	if noDwo:
+        var.setValue(val)
+        noDwo = True
+        if GacEnforce(csp.constraintsOf(var),csp,var,val) == "DWO":
+            noDwo = False
+        if noDwo:
             new_solns = GAC(unAssignedVars, csp, allSolutions, trace)
-	    Variable.restoreValues(var,val)
+            Variable.restoreValues(var,val)
             if new_solns:
                 solns.extend(new_solns)
             if len(solns) > 0 and not allSolutions:
@@ -284,8 +285,3 @@ def GAC(unAssignedVars, csp, allSolutions, trace):
     var.unAssign()
     unAssignedVars.insert(var)
     return solns
-
-    
-		
-
-    #util.raiseNotDefined()
